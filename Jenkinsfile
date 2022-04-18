@@ -13,19 +13,9 @@ node {
 
     stage('Build to ECR'){
         // Docker Build and Push to ECR
-        docker.withRegistry("https://${ECR_PATH}", "ecr:${REGION}:jenkins-aws-anderson-credentials"){
-            image = docker.build("${ECR_PATH}/${ECR_IMAGE}")
-            image.push()
+        docker.withRegistry("https://", "ecr::aws-credentials"){
+            image = docker.build("/", "--network=host --no-cache .")
         }
     }
-    stage('Kubernetes'){
-        withKubeConfig([credentialsId: "kubectl-deploy-credentials",
-                        serverUrl: "${EKS_API}",
-                        clusterName: "${EKS_CLUSTER_NAME}"]){
 
-            sh "sed 's/IMAGE_VERSION/${env.BUILD_ID}/g' nginx-deployment.yaml > output.yaml"
-            sh "aws eks --region ${REGION} update-kubeconfig --name ${EKS_CLUSTER_NAME}"
-            sh "kubectl apply -f output.yaml"
-        }
-    }
 }
