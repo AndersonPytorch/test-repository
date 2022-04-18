@@ -5,7 +5,7 @@ EKS_NAMESPACE='default'
 EKS_JENKINS_CREDENTIAL_ID='kubectl-deploy-credentials'
 ECR_PATH = '998902534284.dkr.ecr.ap-northeast-2.amazonaws.com'
 ECR_IMAGE = 'test-repository'
-JENKINS_AWS_CREDENTIAL_ID = 'aws-credentials'
+AWS_CREDENTIAL_ID = 'aws-credentials'
 
 node {
     stage('Clone Repository'){
@@ -14,10 +14,9 @@ node {
 
     stage('Docker Build'){
         // Docker Build
-        image = docker.build("${ECR_PATH}/${ECR_IMAGE}", "--network=host --no-cache .")
-//         docker.withRegistry("https://${ECR_PATH}", "ecr:${REGION}:${JENKINS_AWS_CREDENTIAL_ID}"){
-//             image = docker.build("${ECR_PATH}/${ECR_IMAGE}", "--network=host --no-cache .")
-//         }
+        docker.withRegistry("https://${ECR_PATH}", "ecr:${REGION}:${AWS_CREDENTIAL_ID}"){
+            image = docker.build("${ECR_PATH}/${ECR_IMAGE}", "--network=host --no-cache .")
+        }
     }
     stage('Kubernetes'){
         withKubeConfig([credentialsId: "kubectl-deploy-credentials",
