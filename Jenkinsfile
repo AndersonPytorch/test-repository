@@ -13,10 +13,11 @@ node {
     }
 
     stage('Docker Build'){
-        // Docker Build and Push to ECR
-        docker.withRegistry("https://${ECR_PATH}", "ecr:${REGION}:${JENKINS_AWS_CREDENTIAL_ID}"){
-            def image = docker.build("${ECR_PATH}/${ECR_IMAGE}:${env.BUILD_ID}", "--network=host --no-cache .")
-        }
+        // Docker Build
+        image = docker.build("${ECR_PATH}/${ECR_IMAGE}", "--network=host --no-cache .")
+//         docker.withRegistry("https://${ECR_PATH}", "ecr:${REGION}:${JENKINS_AWS_CREDENTIAL_ID}"){
+//             image = docker.build("${ECR_PATH}/${ECR_IMAGE}", "--network=host --no-cache .")
+//         }
     }
     stage('Kubernetes'){
         withKubeConfig([credentialsId: "kubectl-deploy-credentials",
