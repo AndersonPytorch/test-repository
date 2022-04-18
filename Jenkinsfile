@@ -11,7 +11,6 @@ node {
     stage('Clone Repository'){
         checkout scm
     }
-
     stage('Docker Build'){
         // Docker Build
         docker.withRegistry("https://${ECR_PATH}", "ecr:${REGION}:${AWS_CREDENTIAL_ID}"){
@@ -30,13 +29,14 @@ node {
         """
     }
     stage('Deploy to K8S'){
-
+        withKubeConfig([credentialsId: "kubectl-deploy-credentials",
+                        serverUrl: "${EKS_API}",
+                        clusterName: "${EKS_CLUSTER_NAME}"]){
             sh "sed 's/IMAGE_VERSION/${env.BUILD_ID}/g' service.yaml > output.yaml"
             sh "aws eks --region ${REGION} update-kubeconfig --name ${EKS_CLUSTER_NAME}"
             sh "kubectl apply -f output.yaml"
             sh "rm output.yaml"
-
+        }
     }
-
 }
 
