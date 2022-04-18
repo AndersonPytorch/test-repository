@@ -18,6 +18,11 @@ node {
             image = docker.build("${ECR_PATH}/${ECR_IMAGE}", "--network=host --no-cache .")
         }
     }
+    stage('Push to ECR'){
+        docker.withRegistry("https://${ECR_PATH}", "ecr:${REGION}:${AWS_CREDENTIAL_ID}"){
+            image.push("v${env.BUILD_NUMBER}")
+        }
+    }
     stage('Kubernetes'){
         withKubeConfig([credentialsId: "kubectl-deploy-credentials",
                         serverUrl: "${EKS_API}",
@@ -30,7 +35,4 @@ node {
     }
 
 }
-
-
-
 
